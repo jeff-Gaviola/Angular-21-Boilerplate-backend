@@ -31,7 +31,12 @@ async function initialize() {
       host, 
       port, 
       dialect: 'mysql',
-      logging: false 
+      dialectOptions: {
+        ssl: {
+          rejectUnauthorized: false // Required for some public cloud database connections
+        }
+      },
+      logging: console.log // Enable detailed logging to see the exact SQL and errors
     });
 
     // Initialize models
