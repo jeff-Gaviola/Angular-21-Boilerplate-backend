@@ -49,7 +49,9 @@ async function initialize() {
     // Sync models (create tables if they don't exist)
     await sequelize.sync();
     console.log('Database synced successfully.');
-  } catch (error) {
-    console.error('Database initialization failed:', error);
+  } catch (error: any) {
+    console.error('Database initialization failed.');
+    console.error('ERROR MESSAGE:', error.message || error);
+    if (error.stack) console.error('ERROR STACK:', error.stack);
   }
 }

@@ -2,6 +2,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import 'mysql2';
 
 import errorHandler from './_middleware/error-handler';
 import accountsController from './accounts/accounts.controller';
