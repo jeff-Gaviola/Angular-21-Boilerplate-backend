@@ -18,6 +18,11 @@ async function initialize() {
       console.log('Connecting to database using connection string...');
       sequelize = new Sequelize(mysqlUrl, {
         dialect: 'mysql',
+        dialectOptions: {
+          ssl: {
+            rejectUnauthorized: false
+          }
+        },
         logging: console.log
       });
     } else {
@@ -34,6 +39,11 @@ async function initialize() {
         host, 
         port, 
         dialect: 'mysql',
+        dialectOptions: {
+          ssl: {
+            rejectUnauthorized: false
+          }
+        },
         logging: console.log
       });
     }
