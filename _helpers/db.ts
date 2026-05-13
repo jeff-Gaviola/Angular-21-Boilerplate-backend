@@ -15,7 +15,8 @@ async function initialize() {
     let sequelize;
 
     if (mysqlUrl) {
-      console.log('Connecting to database using connection string...');
+      const maskedUrl = mysqlUrl.replace(/:[^:]*@/, ':****@');
+      console.log('Connecting to database using connection string:', maskedUrl);
       sequelize = new Sequelize(mysqlUrl, {
         dialect: 'mysql',
         dialectOptions: {
