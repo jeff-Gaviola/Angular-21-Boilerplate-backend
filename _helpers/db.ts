@@ -20,9 +20,7 @@ async function initialize() {
       sequelize = new Sequelize(mysqlUrl, {
         dialect: 'mysql',
         dialectOptions: {
-          ssl: {
-            rejectUnauthorized: false
-          }
+          connectTimeout: 60000 // 60 seconds timeout
         },
         logging: console.log
       });
@@ -41,9 +39,7 @@ async function initialize() {
         port, 
         dialect: 'mysql',
         dialectOptions: {
-          ssl: {
-            rejectUnauthorized: false
-          }
+          connectTimeout: 60000
         },
         logging: console.log
       });
