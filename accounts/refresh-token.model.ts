@@ -12,7 +12,7 @@ export default function model(sequelize: Sequelize) {
     isExpired: {
       type: DataTypes.VIRTUAL,
       get(this: any) {
-        return Date.now() >= this.expires;
+        return Date.now() >= this.expires;  
       }
     },
     isActive: {

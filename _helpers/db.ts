@@ -10,24 +10,42 @@ export default db;
 initialize();
 
 async function initialize() {
-  const { host, port, user, password, database } = (config as any).database;
+  try {
+    const host = process.env.MYSQLHOST || process.env.DB_HOST || config.database.host;
+    const port = Number(process.env.MYSQLPORT || process.env.DB_PORT) || config.database.port;
+    const user = process.env.MYSQLUSER || process.env.DB_USER || config.database.user;
+    const password = process.env.MYSQLPASSWORD || process.env.DB_PASSWORD || config.database.password;
+    const database = process.env.MYSQLDATABASE || process.env.MYSQL_DATABASE || process.env.DB_NAME || config.database.database;
 
-  const connection = await mysql.createConnection({ host, port, user, password });
+    console.log(`Initializing database at ${host}:${port}...`);
 
-  // Create database if it doesn't exist
-  await connection.query(`CREATE DATABASE IF NOT EXISTS \`${database}\``);
+    // Create database if it doesn't exist (only if not in production/Railway)
+    if (process.env.NODE_ENV !== 'production') {
+      const connection = await mysql.createConnection({ host, port, user, password });
+      await connection.query(`CREATE DATABASE IF NOT EXISTS \`${database}\``);
+      await connection.end();
+    }
 
-  // Connect to the database with Sequelize
-  const sequelize = new Sequelize(database, user, password, { dialect: 'mysql' });
+    // Connect to the database with Sequelize
+    const sequelize = new Sequelize(database, user, password, { 
+      host, 
+      port, 
+      dialect: 'mysql',
+      logging: false 
+    });
 
-  // Initialize models
-  db.Account = accountModel(sequelize);
-  db.RefreshToken = refreshTokenModel(sequelize);
+    // Initialize models
+    db.Account = accountModel(sequelize);
+    db.RefreshToken = refreshTokenModel(sequelize);
 
-  // Define relationships
-  db.Account.hasMany(db.RefreshToken, { onDelete: 'CASCADE' });
-  db.RefreshToken.belongsTo(db.Account);
+    // Define relationships
+    db.Account.hasMany(db.RefreshToken, { onDelete: 'CASCADE' });
+    db.RefreshToken.belongsTo(db.Account);
 
-  // Sync models (create tables if they don't exist)
-  await sequelize.sync();
+    // Sync models (create tables if they don't exist)
+    await sequelize.sync();
+    console.log('Database synced successfully.');
+  } catch (error) {
+    console.error('Database initialization failed:', error);
+  }
 }
