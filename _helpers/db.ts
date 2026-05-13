@@ -11,33 +11,42 @@ initialize();
 
 async function initialize() {
   try {
-    const host = process.env.MYSQLHOST || process.env.DB_HOST || config.database.host;
-    const port = Number(process.env.MYSQLPORT || process.env.DB_PORT) || config.database.port;
-    const user = process.env.MYSQLUSER || process.env.DB_USER || config.database.user;
-    const password = process.env.MYSQLPASSWORD || process.env.DB_PASSWORD || config.database.password;
-    const database = process.env.MYSQLDATABASE || process.env.MYSQL_DATABASE || process.env.DB_NAME || config.database.database;
+    const mysqlUrl = process.env.MYSQL_PUBLIC_URL || process.env.MYSQL_URL;
+    let sequelize;
 
-    console.log(`Initializing database at ${host}:${port}...`);
+    if (mysqlUrl) {
+      console.log('Connecting to database using connection string...');
+      sequelize = new Sequelize(mysqlUrl, {
+        dialect: 'mysql',
+        dialectOptions: {
+          ssl: {
+            rejectUnauthorized: false
+          }
+        },
+        logging: console.log
+      });
+    } else {
+      const host = process.env.MYSQLHOST || process.env.DB_HOST || config.database.host;
+      const port = Number(process.env.MYSQLPORT || process.env.DB_PORT) || config.database.port;
+      const user = process.env.MYSQLUSER || process.env.DB_USER || config.database.user;
+      const password = process.env.MYSQLPASSWORD || process.env.DB_PASSWORD || config.database.password;
+      const database = process.env.MYSQLDATABASE || process.env.MYSQL_DATABASE || process.env.DB_NAME || config.database.database;
 
-    // Create database if it doesn't exist (only if not in production/Railway)
-    if (process.env.NODE_ENV !== 'production') {
-      const connection = await mysql.createConnection({ host, port, user, password });
-      await connection.query(`CREATE DATABASE IF NOT EXISTS \`${database}\``);
-      await connection.end();
+      console.log(`Initializing database at ${host}:${port}...`);
+
+      // Connect to the database with Sequelize
+      sequelize = new Sequelize(database, user, password, { 
+        host, 
+        port, 
+        dialect: 'mysql',
+        dialectOptions: {
+          ssl: {
+            rejectUnauthorized: false
+          }
+        },
+        logging: console.log
+      });
     }
-
-    // Connect to the database with Sequelize
-    const sequelize = new Sequelize(database, user, password, { 
-      host, 
-      port, 
-      dialect: 'mysql',
-      dialectOptions: {
-        ssl: {
-          rejectUnauthorized: false // Required for some public cloud database connections
-        }
-      },
-      logging: console.log // Enable detailed logging to see the exact SQL and errors
-    });
 
     // Initialize models
     db.Account = accountModel(sequelize);
